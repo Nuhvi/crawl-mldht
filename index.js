@@ -49,16 +49,17 @@ for (let i = 0; i < STEPS; i++) {
 close()
 
 function close() {
+  ensureDir()
+
+  fs.writeFileSync('./data/unique-ips.txt', [...uniqueIPs.values()].join('\n'))
+  fs.writeFileSync('./data/all-nodes.txt', [...nodes.values()].sort().join('\n'))
+
   console.log("\n================================================")
   console.log("check data/unique-ips.txt and data/all-nodes.txt")
   console.log("================================================")
   console.log("Discovered", nodes.size, "nodes `cat ./data/all-nodes.txt`")
   console.log("Unique IPs: ", uniqueIPs.size, " `cat ./data/unique-ips.txt`")
-
-  ensureDir()
-
-  fs.writeFileSync('./data/unique-ips.txt', [...uniqueIPs.values()].join('\n'))
-  fs.writeFileSync('./data/all-nodes.txt', [...nodes.values()].sort().join('\n'))
+  console.log("Generate a map of unique IPs: \n`cat ./data/unique-ips.txt | curl - XPOST--data - binary @- 'https://ipinfo.io/tools/map?cli=1'`");
 
   dht.destroy()
   process.exit(0)
