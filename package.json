@@ -1,0 +1,17 @@
+{
+  "type": "module",
+  "name": "crawl-mldht",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bittorrent-dht": "^11.0.4",
+    "sodium-native": "^4.0.4"
+  }
+}

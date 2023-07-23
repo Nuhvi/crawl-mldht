@@ -1,0 +1,77 @@
+import DHT from 'bittorrent-dht'
+import fs from 'fs'
+import sodium from 'sodium-native'
+
+const STEPS = process.argv[2] || 200;
+
+const dht = new DHT({
+  bootstrap: [
+    { host: 'router.bittorrent.com', port: 6881 },
+    { host: 'router.utorrent.com', port: 6881 },
+    { host: 'dht.transmissionbt.com', port: 6881 },
+    // Running a reliable DHT node that responds to requests from behind NAT? please open an issue.
+    { host: 'router.nuh.dev', port: 6881 }
+  ]
+})
+const uniqueIPs = new Set()
+const nodes = new Set()
+
+process.on('SIGINT', close);
+
+for (let i = 0; i < STEPS; i++) {
+  const target = randomBytes(16)
+
+  const message = {
+    q: 'get',
+    a: {
+      id: dht._rpc.id,
+      target
+    }
+  }
+
+  await new Promise((resolve, reject) => {
+    dht._closest(target, message, log, (error, n) => {
+      if (error) reject(error);
+      else resolve(n)
+    })
+  })
+
+  function log(_, node) {
+    node.host = node.address
+
+    const address = node.host + ":" + node.port
+    uniqueIPs.add(node.host)
+    nodes.add(address)
+    console.log(`Checked: ${i}/${STEPS} topics | unique ips= ${uniqueIPs.size} / nodes=${nodes.size} | ${address} `)
+  }
+}
+
+close()
+
+function close() {
+  console.log("\n================================================")
+  console.log("check data/unique-ips.txt and data/all-nodes.txt")
+  console.log("================================================")
+  console.log("Discovered", nodes.size, "nodes `cat ./data/all-nodes.txt`")
+  console.log("Unique IPs: ", uniqueIPs.size, " `cat ./data/unique-ips.txt`")
+
+  ensureDir()
+
+  fs.writeFileSync('./data/unique-ips.txt', [...uniqueIPs.values()].join('\n'))
+  fs.writeFileSync('./data/all-nodes.txt', [...nodes.values()].sort().join('\n'))
+
+  dht.destroy()
+  process.exit(0)
+}
+
+function randomBytes(n = 32) {
+  const buf = Buffer.allocUnsafe(n)
+  sodium.randombytes_buf(buf)
+  return buf
+}
+
+function ensureDir() {
+  try {
+    fs.mkdirSync('./data')
+  } catch { }
+}
