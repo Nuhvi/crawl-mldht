@@ -2,7 +2,7 @@ import DHT from 'bittorrent-dht'
 import fs from 'fs'
 import sodium from 'sodium-native'
 
-const STEPS = process.argv[2] || 200;
+const STEPS = process.argv[2] || 100000;
 
 const dht = new DHT({
   bootstrap: [
@@ -19,7 +19,7 @@ const nodes = new Set()
 process.on('SIGINT', close);
 
 for (let i = 0; i < STEPS; i++) {
-  const target = randomBytes(16)
+  const target = randomBytes(20)
 
   const message = {
     q: 'get',
@@ -42,7 +42,7 @@ for (let i = 0; i < STEPS; i++) {
     const address = node.host + ":" + node.port
     uniqueIPs.add(node.host)
     nodes.add(address)
-    console.log(`Checked: ${i}/${STEPS} topics | unique ips= ${uniqueIPs.size} / nodes=${nodes.size} | ${address} `)
+    console.log(`Step: ${i}/${STEPS} | target=${target.toString('hex')} | unique ips= ${uniqueIPs.size} / nodes=${nodes.size} | ${address} `)
   }
 }
 
@@ -59,7 +59,7 @@ function close() {
   console.log("================================================")
   console.log("Discovered", nodes.size, "nodes `cat ./data/all-nodes.txt`")
   console.log("Unique IPs: ", uniqueIPs.size, " `cat ./data/unique-ips.txt`")
-  console.log("Generate a map of unique IPs: \n`cat ./data/unique-ips.txt | curl - XPOST--data - binary @- 'https://ipinfo.io/tools/map?cli=1'`");
+  console.log("Generate a map of unique IPs: \n`cat ./data/unique-ips.txt | curl -XPOST --data - binary @- 'https://ipinfo.io/tools/map?cli=1'`");
 
   dht.destroy()
   process.exit(0)
