@@ -36,13 +36,15 @@ for (let i = 0; i < STEPS; i++) {
     })
   })
 
-  function log(_, node) {
+  function log(message, node) {
     node.host = node.address
+
+    const client = message.v?.toString().slice(0, 2) || '__'
 
     const address = node.host + ":" + node.port
     uniqueIPs.add(node.host)
     nodes.add(address)
-    console.log(`Step: ${i}/${STEPS} | target=${target.toString('hex')} | unique ips= ${uniqueIPs.size} / nodes=${nodes.size} | ${address} `)
+    console.log(`Step: ${i}/${STEPS} | target=${target.toString('hex')} | unique ips= ${uniqueIPs.size} / nodes=${nodes.size} | node: ${client} ${address} `)
   }
 }
 
